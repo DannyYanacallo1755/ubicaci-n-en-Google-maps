@@ -20,8 +20,10 @@ export class LocationPage implements OnInit, AfterViewInit {
     this.loadMap();
   }
 
-  loadMap() {
-    const latLng = new google.maps.LatLng(-0.210530, -78.493579); 
+  async loadMap() {
+    const coordinates = await Geolocation.getCurrentPosition();
+
+    const latLng = new google.maps.LatLng(coordinates.coords.latitude, coordinates.coords.longitude); 
 
     const mapOptions = {
       center: latLng,
@@ -31,11 +33,26 @@ export class LocationPage implements OnInit, AfterViewInit {
 
     this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
-    // Añadir un marcador en la ubicación especificada
     const marker = new google.maps.Marker({
       position: latLng,
       map: this.map,
-      title: 'Av. Ladrón de Guevara E11-253, Quito 170143'
+      title: 'Mi Ubicación'
+    });
+
+    this.watchPosition();
+  }
+
+  watchPosition() {
+    Geolocation.watchPosition({}, (position, err) => {
+      if (position) {
+        const newLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        this.map.setCenter(newLatLng);
+        const marker = new google.maps.Marker({
+          position: newLatLng,
+          map: this.map,
+          title: 'Mi Ubicación'
+        });
+      }
     });
   }
 }
